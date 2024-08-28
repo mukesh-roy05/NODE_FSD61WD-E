@@ -1,22 +1,44 @@
-// server.js
-const http = require("http");
+const express = require("express");
+const app = express();
+const fs = require("fs");
 
-const server = http.createServer((request, response) => {
-  const { url, method } = request;
-  if (url === "/") {
-    if (method === "GET") {
-      return response.end("GET World");
-    } else if (method === "POST") {
-      return response.end("POST World");
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+app.get("/stats", (req, res) => {
+  fs.stat("./Files/test.txt", (err, stats) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.json({
+        size: `$(stats.size) bytes`,
+        isFile: stats.isFile(),
+        isDirectory: stats.isDirectory(),
+        isSymbolicLink: stats.isSymbolicLink(),
+      });
     }
-  } else if (url === "/test") {
-    return response.end("Hello World");
-  } else return response.end("Endpoint not found");
+  });
 });
 
-// starts a simple http server locally on port 3000
-server.listen(3000, "127.0.0.1", () => {
-  console.log("Server Listening on 127.0.0.1:3000");
+app.post("/create", (req, res) => {
+  fs.writeFile("./Files/newFile.txt", "Hello World", (err) => {
+    if (err) {
+      res.send(err);
+    }
+    res.send("File Created Successfully");
+  });
 });
 
-// run with `node server.mjs`
+app.post("/read", (req, res) => {
+  fs.readFile("./Files/test.txt", "utf8", (err, data) => {
+    if (err) {
+      res.send(err);
+    }
+    res.send(data);
+  });
+});
+
+app.listen("3000", "localhost", () => {
+  console.log(`Server is running on http://localhost:3000`);
+});
