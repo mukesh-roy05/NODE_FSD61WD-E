@@ -30,7 +30,7 @@ app.post("/create", (req, res) => {
   });
 });
 
-app.post("/read", (req, res) => {
+app.get("/read", (req, res) => {
   fs.readFile("./Files/test.txt", "utf8", (err, data) => {
     if (err) {
       res.send(err);
