@@ -1,13 +1,12 @@
 const express = require("express");
+const fs = require("fs");
+const path = require("path");
 
 const app = express();
-const fs = require("fs");
+const PORT = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
-  res.send("Task to create a file");
-});
-
-app.post("/create", (req, res) => {
+// Endpoint to create a text file with current timestamp
+app.get("/create-file", (req, res) => {
   const currentTimestamp = new Date().toISOString();
   const dateTimeString = new Date()
     .toISOString()
@@ -25,14 +24,33 @@ app.post("/create", (req, res) => {
     // Write the timestamp to the file
     fs.writeFile(filePath, currentTimestamp, (err) => {
       if (err) {
-        res.send(err);
-      } else {
-        res.send("File created successfully");
+        return res.status(500).json({ error: "Failed to write file" });
       }
+
+      res.json({ message: `File created: ${fileName}`, path: filePath });
     });
   });
 });
 
-app.listen(3000, () => {
-  console.log("Server Started on Port 3000");
+
+// New endpoint to retrieve all text files
+app.get('/list-files', (req, res) => {
+    const directoryPath = path.join(__dirname, 'files');
+
+    fs.readdir(directoryPath, (err, files) => {
+        if (err) {
+            return res.status(500).json({ error: 'Failed to read directory' });
+        }
+
+        // Filter for text files
+        const textFiles = files.filter(file => file.endsWith('.txt'));
+
+        res.json({ files: textFiles });
+    });
+});
+
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
